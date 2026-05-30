@@ -33,4 +33,4 @@ class interpreter:
         elif self.filename.endswith(".cfdy"):
             self.gtgc = True
 
-engine = interpreter(filename)s
+engine = interpreter(filename)
