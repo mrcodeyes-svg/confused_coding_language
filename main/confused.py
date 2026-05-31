@@ -58,7 +58,7 @@ class language:
                 for i in f:
                     self.line += 1
                     if not i.rstrip().endswith(">") and i.rstrip():
-                        self.error(f"Error on line {self.line}. Reason: does not have a > as the ending character")
+                        self.error(f"Error on line {self.line}. Reason: does not have > as the ending character")
                     else:
                         self.code[self.line] = i.rstrip()
 
