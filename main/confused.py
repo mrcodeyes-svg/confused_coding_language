@@ -100,6 +100,6 @@ class language:
             else:
                 self.error(f"Error on line {i}. Reason: line did not have a indicator for a function that exists")
 
-#I might make a tokenizer someday and a Parser
+#I might make a tokenizer someday and a Parser1
 
 engine = language(filename)
