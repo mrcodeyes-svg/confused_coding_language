@@ -100,21 +100,20 @@ class language:
                     self.run("say", inside, None)
                 elif inside.strip() in self.global_vars and inside.strip() in self.type:
                     #we are making a inside2 var so we can strip down inside of the things that make it a str so it does not show up it the say
-                    inside2 = inside.strip("'")
-                    inside2 = inside.strip('"')
-                    self.run("say", self.global_vars[inside2.strip()], None)
+                    var_val = self.global_vars[inside].strip()
+                    if (var_val.startswith("'") and var_val.endswith("'")) or (var_val.startswith('"') and var_val.endswith('"')):
+                        inside2 = var_val.strip("'").strip('"')
+                    self.run("say", inside2, None)
             #the vars
             elif self.code[i].strip().startswith("var"):
                 name = self.code[i][self.code[i].index("var") + 3 : self.code[i].rfind("=")].strip()
                 inside = self.code[i][self.code[i].index("=") + 1 : self.code[i].rfind(">")].strip()
-                if isinstance(inside, str):
-                    print('yeah')
                 self.type[name] = self.get_type(inside, i)
                 self.run("var", inside, name)
             #leave this as the last line so it can give the error right
             else:
                 self.error(f"Error on line {i}. Reason: line did not have a indicator for a function that exists")
 
-#I might make a tokenizer someday and a Parser1
+#I might make a tokenizer someday and a Parser
 
 engine = language(filename)
