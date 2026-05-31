@@ -91,7 +91,7 @@ class language:
                 if inside.startswith('"') and inside.endswith('"'):
                     self.run("say", inside.strip('"'), None)
             #the vars
-            elif self.code[i].strip().startswsith("var"):
+            elif self.code[i].strip().startswith("var"):
                 name = self.code[i][self.code[i].index("var") + 3 : self.code[i].rfind("=")].strip()
                 inside = self.code[i][self.code[i].index("=") + 1 : self.code[i].rfind(">")].strip()
                 self.type[name] = self.get_type(inside, i)
