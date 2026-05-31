@@ -88,9 +88,15 @@ class language:
         #the say function
         for i in sorted(self.code.keys()):
             if self.code[i].strip().startswith("say("):
+                #the inside of the say
                 inside = self.code[i][self.code[i].index("say(") + 4 : self.code[i].rfind(")")]
+                #the checks to see if it is a str or a int or a float
                 if inside.startswith('"') and inside.endswith('"'):
-                    self.run("say", inside.strip('"'), None)
+                    self.run("say", inside.strip('"'), i)
+                elif inside.strip(".").isdigit():
+                    self.run("say", inside, i)
+                elif inside.strip() in self.global_vars and inside.strip() in self.type:
+                    self.run("say", self.global_vars[inside.strip()], None)
             #the vars
             elif self.code[i].strip().startswith("var"):
                 name = self.code[i][self.code[i].index("var") + 3 : self.code[i].rfind("=")].strip()
