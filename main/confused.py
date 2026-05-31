@@ -20,6 +20,8 @@ class language:
     def __init__(self, file):
         #the lines of code
         self.code = {}
+        #get the type of var 1 is for string 2 is for float 3 is for int
+        self.type = {}
         #the mem for the global vars
         self.global_vars = {}
         #the filename
@@ -31,6 +33,9 @@ class language:
         self.allow_file()
         #get the code
         self.get_code()
+        #use all the new code for the run
+        self.get_run()
+
 
     #make an error function to reuse this function prints the message and exits the code
     def error(self, message):
@@ -52,6 +57,49 @@ class language:
             with open(self.filename, "r", encoding="utf-8") as f:
                 for i in f:
                     self.line += 1
-                    self.code[self.line] = i.rstrip()
+                    if not i.rstrip().endswith(">") and i.rstrip():
+                        self.error(f"Error on line {self.line}. Reason: does not have a > as the ending character")
+                    else:
+                        self.code[self.line] = i.rstrip()
+
+    #get the types with a functiom
+    def get_type(self,pass_in, line):
+        pass_in = pass_in.strip()
+
+        if "." in pass_in and pass_in.replace(".", "", 1).isdigit():
+            return "float"
+        elif pass_in.isdigit():
+            return "int"
+        elif (pass_in.startswith('"') and pass_in.endswith('"')) or (pass_in.startswith("'") and pass_in.endswith("'")):
+            return "str"
+        else:
+            self.error(f"Error on line {line}. Reason: not supported type")
+
+    #run the code
+    def run(self, command, pass_in, name):
+        if command == "say":
+            print(pass_in) 
+        elif command == "var":
+            self.global_vars[name] = pass_in
+
+    #go through the code so it can run
+    def get_run(self):
+        #the say function
+        for i in sorted(self.code.keys()):
+            if self.code[i].strip().startswith("say("):
+                inside = self.code[i][self.code[i].index("say(") + 4 : self.code[i].rfind(")")]
+                if inside.startswith('"') and inside.endswith('"'):
+                    self.run("say", inside.strip('"'), None)
+            #the vars
+            elif self.code[i].strip().startswith("var"):
+                name = self.code[i][self.code[i].index("var") + 3 : self.code[i].rfind("=")].strip()
+                inside = self.code[i][self.code[i].index("=") + 1 : self.code[i].rfind(">")].strip()
+                self.type[name] = self.get_type(inside, i)
+                self.run("var", inside, name)
+            #leave this as the last line so it can give the error right
+            else:
+                self.error(f"Error on line {i}. Reason: line did not have a indicator for a function that exists")
+
+#I might make a tokenizer someday and a Parser
 
 engine = language(filename)
