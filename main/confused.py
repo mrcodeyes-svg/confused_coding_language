@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#this is know as alpha 1.0
 import sys
 
 #get the filename
