@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#this is know as alpha 1.0
+#this is know as alpha 1.01
 import sys
 
 #get the filename
@@ -40,14 +40,16 @@ class language:
 
 
     #make an error function to reuse this function prints the message and exits the code
-    def error(self, message):
+    def error(self, message, code):
+        if not code is None:
+            print(f" {colors.fail}{ colors.under}This is the line that crashed: {code}{colors.endc}")
         print(colors.fail, colors.under + message + colors.endc)
         sys.exit(1)
 
     def allow_file(self):
         if not self.filename.endswith(".cfdy"):
             #tell the user that they don't haven the right file extension
-            self.error("The file you are trying to run must have the file extension .cfdy")
+            self.error("The file you are trying to run must have the file extension .cfdy", None)
         elif self.filename.endswith(".cfdy"):
             #set gtgc to true so we know to read the file
             self.gtgc = True
@@ -59,8 +61,13 @@ class language:
             with open(self.filename, "r", encoding="utf-8") as f:
                 for i in f:
                     self.line += 1
-                    if not i.rstrip().endswith(">") and i.rstrip():
-                        self.error(f"Error on line {self.line}. Reason: does not have > as the ending character")
+                    #the comments for the language
+                    if i.strip().startswith("#") or i.strip() == "":
+                        self.code[self.line] = ">"
+                    #the error for not having a > at the end
+                    elif not i.rstrip().endswith(">") and i.rstrip():
+                        self.error(f"Error on line {self.line}. Reason: does not have > as the ending character", i)
+                    #adding the code
                     else:
                         self.code[self.line] = i.rstrip()
 
@@ -75,14 +82,14 @@ class language:
         elif (pass_in.startswith('"') and pass_in.endswith('"')) or (pass_in.startswith("'") and pass_in.endswith("'")):
             return "str"
         else:
-            self.error(f"Error on line {line}. Reason: not supported type")
+            self.error(f"Error on line {line}. Reason: not supported type", None)
 
     #run the code
     def run(self, command, pass_in, name):
         if command == "say":
             print(pass_in) 
         elif command == "var":
-            self.global_vars[name] = pass_in
+            self.global_vars[name.strip()] = pass_in
 
     #go through the code so it can run
     def get_run(self):
@@ -94,26 +101,28 @@ class language:
                 #the checks to see if it is a str or a int or a float
                 if (inside.startswith('"') and inside.endswith('"')) or (inside.startswith("'") and inside.endswith("'")):
                     #we are making a inside2 var so we can strip down inside of the things that make it a str
-                    inside2 = inside.strip('"')
-                    inside2 = inside.strip("'")
+                    inside2 = inside.strip('"').strip("'")
                     self.run("say", inside2, None)
                 elif inside.strip(".").isdigit():
-                    self.run("say", inside, None)
+                    self.run("say", inside.strip(), None)
                 elif inside.strip() in self.global_vars and inside.strip() in self.type:
                     #we are making a inside2 var so we can strip down inside of the things that make it a str so it does not show up it the say
                     var_val = self.global_vars[inside].strip()
                     if (var_val.startswith("'") and var_val.endswith("'")) or (var_val.startswith('"') and var_val.endswith('"')):
                         inside2 = var_val.strip("'").strip('"')
+                    else:
+                        inside2 = var_val
                     self.run("say", inside2, None)
             #the vars
             elif self.code[i].strip().startswith("var"):
                 name = self.code[i][self.code[i].index("var") + 3 : self.code[i].rfind("=")].strip()
                 inside = self.code[i][self.code[i].index("=") + 1 : self.code[i].rfind(">")].strip()
-                self.type[name] = self.get_type(inside, i)
+                self.type[name.strip()] = self.get_type(inside, i)
                 self.run("var", inside, name)
             #leave this as the last line so it can give the error right
             else:
-                self.error(f"Error on line {i}. Reason: line did not have a indicator for a function that exists")
+                if self.code[i].strip() and (not self.code[i].startswith('>')):
+                    self.error(f"Error on line {i}. Reason: line did not have a indicator for a function that exists", self.code[i])
 
 #I might make a tokenizer someday and a Parser
 
