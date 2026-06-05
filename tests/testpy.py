@@ -1,3 +1,1 @@
-hi = 'what'
-if isinstance(hi, str):
-    print("what")
+print(x= 1)

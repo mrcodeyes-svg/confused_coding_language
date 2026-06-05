@@ -26,6 +26,11 @@ class language:
         self.type = {}
         #the mem for the global vars
         self.global_vars = {}
+        #a list of functions to go through
+        self.funcs_def = {
+            "say": "says the thing that is passed into it and prints it to the console", 
+            "var": "makes a var with a type and the data that goes with the var"
+        }
         #the filename
         self.filename = file
         #the line we are on
@@ -90,35 +95,48 @@ class language:
             print(pass_in) 
         elif command == "var":
             self.global_vars[name.strip()] = pass_in
+    
+    #make a say function
+    def say(self, inside):
+        #the checks to see if it is a str or a int or a float
+        if (inside.startswith('"') and inside.endswith('"')) or (inside.startswith("'") and inside.endswith("'")):
+            #we are making a inside2 var so we can strip down inside of the things that make it a str
+            inside2 = inside.strip('"').strip("'")
+            self.run("say", inside2, None)
+        elif inside.strip(".").isdigit():
+            self.run("say", inside.strip(), None)
+        elif inside in self.global_vars and inside in self.type:
+            #we are making a inside2 var so we can strip down inside of the things that make it a str so it does not show up it the say
+            var_val = self.global_vars[inside].strip()
+            if (var_val.startswith("'") and var_val.endswith("'")) or (var_val.startswith('"') and var_val.endswith('"')):
+                inside2 = var_val.strip("'").strip('"')
+            else:
+                inside2 = var_val    
+            self.run("say", inside2, None)
+            #something to find functions
+        else:
+            if inside.startswith("say(") and inside.endswith(")"):
+                inside2 = inside[inside.index("say(") + 4 : inside.rfind(")")].strip()
+                self.say(inside2)
+    
+    #the var function
+    def var(self, line):
+        name = self.code[line][self.code[line].index("var") + 3 : self.code[line].rfind("=")].strip()
+        inside = self.code[line][self.code[line].index("=") + 1 : self.code[line].rfind(">")].strip()
+        self.type[name.strip()] = self.get_type(inside, line)
+        self.run("var", inside, name)
 
     #go through the code so it can run
-    def get_run(self):
-        #the say function
+    def get_run(self):  
+        #the call for the say function
         for i in sorted(self.code.keys()):
             if self.code[i].strip().startswith("say("):
                 #the inside of the say
                 inside = self.code[i][self.code[i].index("say(") + 4 : self.code[i].rfind(")")]
-                #the checks to see if it is a str or a int or a float
-                if (inside.startswith('"') and inside.endswith('"')) or (inside.startswith("'") and inside.endswith("'")):
-                    #we are making a inside2 var so we can strip down inside of the things that make it a str
-                    inside2 = inside.strip('"').strip("'")
-                    self.run("say", inside2, None)
-                elif inside.strip(".").isdigit():
-                    self.run("say", inside.strip(), None)
-                elif inside.strip() in self.global_vars and inside.strip() in self.type:
-                    #we are making a inside2 var so we can strip down inside of the things that make it a str so it does not show up it the say
-                    var_val = self.global_vars[inside].strip()
-                    if (var_val.startswith("'") and var_val.endswith("'")) or (var_val.startswith('"') and var_val.endswith('"')):
-                        inside2 = var_val.strip("'").strip('"')
-                    else:
-                        inside2 = var_val
-                    self.run("say", inside2, None)
-            #the vars
+                self.say(inside)
+            #the call for the vars function
             elif self.code[i].strip().startswith("var"):
-                name = self.code[i][self.code[i].index("var") + 3 : self.code[i].rfind("=")].strip()
-                inside = self.code[i][self.code[i].index("=") + 1 : self.code[i].rfind(">")].strip()
-                self.type[name.strip()] = self.get_type(inside, i)
-                self.run("var", inside, name)
+                self.var(i)
             #leave this as the last line so it can give the error right
             else:
                 if self.code[i].strip() and (not self.code[i].startswith('>')):
