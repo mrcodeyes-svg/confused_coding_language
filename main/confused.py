@@ -29,7 +29,8 @@ class language:
         #a list of functions to go through
         self.funcs_def = {
             "say": "says the thing that is passed into it and prints it to the console", 
-            "var": "makes a var with a type and the data that goes with the var"
+            "var": "makes a var with a type and the data that goes with the var",
+            "math": "does math"
         }
         #the filename
         self.filename = file
@@ -42,6 +43,8 @@ class language:
         self.get_code()
         #use all the new code for the run
         self.get_run()
+        #the types of vars
+        self.types_of_vars = ["str", "int", "float"]
 
 
     #make an error function to reuse this function prints the message and exits the code
@@ -123,8 +126,19 @@ class language:
     def var(self, line):
         name = self.code[line][self.code[line].index("var") + 3 : self.code[line].rfind("=")].strip()
         inside = self.code[line][self.code[line].index("=") + 1 : self.code[line].rfind(">")].strip()
+        if self.code[line] in ['+','-','*','/','**','//']:
+            inside = self.math(line)
         self.type[name.strip()] = self.get_type(inside, line)
         self.run("var", inside, name)
+
+    #the math
+    def math(self, line):
+        inside = self.code[line]
+        if '+' in inside:
+            num1 = self.code[line][self.code[line].index(inside.lstrip()[0]) + 1 : self.code[line].rfind("+")]
+            num2 = self.code[line][self.code[line].index("+") + 1 : self.code[line].rfind(">")]
+            final = num1 + num2
+        return final
 
     #go through the code so it can run
     def get_run(self):  
@@ -137,6 +151,9 @@ class language:
             #the call for the vars function
             elif self.code[i].strip().startswith("var"):
                 self.var(i)
+            #the call for math
+            elif i in ['+','-','*','/','**','//']:
+                self.math(i)
             #leave this as the last line so it can give the error right
             else:
                 if self.code[i].strip() and (not self.code[i].startswith('>')):
