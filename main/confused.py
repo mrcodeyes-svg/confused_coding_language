@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#this is know as alpha 1.01
+#this is know as alpha 1.02
 import sys
 
 #get the filename
