@@ -57,10 +57,9 @@ class language:
     def allow_file(self):
         if not self.filename.endswith(".cfdy"):
             #tell the user that they don't haven the right file extension
-            self.error("The file you are trying to run must have the file extension .cfdy", None)
-        elif self.filename.endswith(".cfdy"):
-            #set gtgc to true so we know to read the file
-            self.gtgc = True
+            self.error("The file you are trying to run should have the file extension .cfdy", None)
+        #set gtgc to true so we know to read the file
+        self.gtgc = True
     
     #the function that is going to read the lines of code and store them for later use
     def get_code(self):
@@ -126,8 +125,9 @@ class language:
     def var(self, line):
         name = self.code[line][self.code[line].index("var") + 3 : self.code[line].rfind("=")].strip()
         inside = self.code[line][self.code[line].index("=") + 1 : self.code[line].rfind(">")].strip()
-        if self.code[line] in ['+','-','*','/','**','//']:
-            inside = self.math(line)
+        if any(op in inside for op in ['+','-','*','/','**','//']):
+            inside = str(self.math(line))
+            #print(inside)
         self.type[name.strip()] = self.get_type(inside, line)
         self.run("var", inside, name)
 
@@ -135,8 +135,8 @@ class language:
     def math(self, line):
         inside = self.code[line]
         if '+' in inside:
-            num1 = self.code[line][self.code[line].index(inside.lstrip()[0]) + 1 : self.code[line].rfind("+")]
-            num2 = self.code[line][self.code[line].index("+") + 1 : self.code[line].rfind(">")]
+            num1 = int(self.code[line][self.code[line].index("=") + 1 : self.code[line].rfind("+")])
+            num2 = int(self.code[line][self.code[line].index("+") + 1 : self.code[line].rfind(">")])
             final = num1 + num2
         return final
 
