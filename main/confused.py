@@ -125,20 +125,23 @@ class language:
     def var(self, line):
         name = self.code[line][self.code[line].index("var") + 3 : self.code[line].rfind("=")].strip()
         inside = self.code[line][self.code[line].index("=") + 1 : self.code[line].rfind(">")].strip()
+        #find out if we need math
         if any(op in inside for op in ['+','-','*','/','**','//']):
             inside = str(self.math(line))
-            #print(inside)
         self.type[name.strip()] = self.get_type(inside, line)
         self.run("var", inside, name)
 
     #the math
     def math(self, line):
+        #the line of code
         inside = self.code[line]
-        if '+' in inside:
-            num1 = int(self.code[line][self.code[line].index("=") + 1 : self.code[line].rfind("+")])
-            num2 = int(self.code[line][self.code[line].index("+") + 1 : self.code[line].rfind(">")])
-            final = num1 + num2
-        return final
+        #check if it is a var
+        if 'var' in inside and '=' in inside:
+            stripedi = inside.strip(self.code[line][self.code[line].index(inside[0]): self.code[line].index("=") + 1]) #this means striped inside
+        else:
+            #define it so it does not crash if the line is not a var
+            stripedi = inside
+        
 
     #go through the code so it can run
     def get_run(self):  
@@ -152,7 +155,7 @@ class language:
             elif self.code[i].strip().startswith("var"):
                 self.var(i)
             #the call for math
-            elif i in ['+','-','*','/','**','//']:
+            elif any(op in self.code[i] for op in ['+','-','*','/','**','//']):
                 self.math(i)
             #leave this as the last line so it can give the error right
             else:

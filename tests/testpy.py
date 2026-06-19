@@ -1,4 +1,1 @@
-def hi():
-    return "what"
-
-hi()
+print(eval("'what' + '2'"))
